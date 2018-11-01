@@ -17,9 +17,18 @@ The focus will be into steering behaviours as a form of making the game seem liv
 
 See the full project outline via Trello
 
+The cards in the Trello Board have checklists showing the needs to complete each step
+
 The main needs is to work on making the Steering Behaviour Library and also deciding on what sort of graphics engine I'll use, how the game is managed will be made by mean, making a world mananager for the whole game.
 
+# Design
 
+I am making two variants of about 4 screens involving
+
+- Main menu
+- Game Screen
+- In-Game UI Components
+- Pause / Settings Menu
 
 
 
