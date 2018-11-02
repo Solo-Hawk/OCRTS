@@ -25,8 +25,6 @@ var game = {
         console.log("Preloading")
         game.config.preload();
         game.preloader.preloading()
-
-
     },
     preloader: {
         images: {},
@@ -63,23 +61,69 @@ var graphics = {
     draw: function (sprite, pos, angle) {
         ctx.save();
         ctx.translate(pos.x, pos.y);
-        ctx.rotate(Math.PI / 180 * angle);
-        var image = sprite.getImage()
+        ctx.rotate(angle - (Math.PI / 180 * 90));
+        var image = sprite.getImage();
         ctx.drawImage(image, - (image.width / 2), - (image.height / 2));
         ctx.restore();
     },
     Sprite: function (image) {
         var s = {
             image: image,
-            
             getImage: function () {
                 return this.image
             }
-
         };
         return s;
     }
+}
 
+var util = {
+    vector2d: function (x, y) {
+        var v = {
+            x: x || 0,
+            y: y || 0,
+            add: function (v) {
+                this.x += v.x
+                this.y += v.y
+            },
+            subtract: function (v) {
+                this.x -= v.x
+                this.y -= v.y
+            },
+            normalise: function () {
+                this.x /= this.length();
+                this.y /= this.length();
+            },
+            scale: function (s) {
+                this.x *= s
+                this.y *= s
+            },
+            length: function () {
+                return Math.sqrt((this.x * this.x) + (this.y * this.y))
+            },
+            rotate: function (a) {
+                theta = Math.PI / 180 * a
+                cs = Math.cos(theta)
+                sn = Math.sin(theta)
+                this.x = this.x * cs - this.y * sn;
+                this.y = this.x * sn + this.y * cs;
+            },
+            toAngle: function () {return Math.atan2(this.y, this.x) },
+            angleTo: function (a) {
+                var len = this.length()
+                this.x = len * Math.cos(Math.PI / 180 * a)
+                this.y = len * Math.sin(Math.PI / 180 * a)
+
+            },
+            set: function (x, y) {
+                this.x = x
+                this.y = y
+            }
+
+        }
+        return v
+    }
+    
 }
 
 var input = {

@@ -4,7 +4,26 @@ game.config.create = create;
 game.config.update = update;
 
 
-
+var shipsManager = {
+    ships: [],
+    add: function (ship) {
+        this.ships.push(ship)
+    },
+    move: function () {
+        for (var s in this.ships) {
+            var ship = this.ships[s]
+            ship.move()
+            ship.vector.rotate(5 - (Math.random() * 10));
+        }
+    },
+    draw: function () {
+        for (var s in this.ships) {
+            var ship = this.ships[s]
+            graphics.draw(ship.sprite, ship.pos, ship.vector.toAngle())
+        }
+    }
+    
+}
 
 
 
@@ -28,43 +47,31 @@ function preload() {
 
 
 function create() {
-    ship.sprite = graphics.Sprite(game.preloader.images["blue_ship_1"], ship)
-    ship.setPos(50,50)
-    console.log(ship)
-
+    for (var x = 0; x < 10; x++) {
+        ship = makeShip(game.preloader.images["blue_ship_1"])
+        console.log(ship)
+        shipsManager.add(ship)
+    }
 }
 
 
 function update(delta) {
-    graphics.draw(ship.sprite, ship.getPos(), ship.getAngle())
-    var pos = ship.getPos();
-    ship.setPos(pos.x, pos.y + 1)
-    ship.rotate(3)
+    shipsManager.move()
+    shipsManager.draw()
 }
 
-var ship = {
-    sprite: null,
-    x: 0,
-    y: 0,
-    angle: 0,
-    setPos: function (x, y) {
-        this.x = x;
-        this.y = y
-    },
-    getPos: function () {
-        return { x: this.x, y: this.y }
-    },
-    rotate: function (rotation) {
-        this.angle += rotation
-    },
-    setAngle: function (angle) {
-        this.angle = angle
-    },
-    getAngle: function () {
-        return this.angle
+function makeShip(sprite) {
+    var s = {
+        sprite: graphics.Sprite(sprite),
+        pos: util.vector2d(400, 400),
+        vector: util.vector2d(1 - (Math.random() * 2), 1 - (Math.random() * 2)),
+        move: function () {
+            this.pos.add(this.vector)
+        }
     }
-
+    return s
 }
+
 var target = { x: 0, y: 0 };
 
 game.run()
