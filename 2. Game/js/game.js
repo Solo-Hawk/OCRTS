@@ -4,17 +4,30 @@ var ctx = canvas.getContext('2d');
 ctx.canvas.width  = 800;
 ctx.canvas.height = 800;
 
-var ship;
-var target = { x: 0, y: 0 };
+
 
 var game = {
+    config: {
+        lasttimestamp: 0,
+        preload: function () { },
+        create: function () { },
+        update: function () { },
+        render: function (timestamp) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            var delta = (timestamp - this.lasttimestamp) / 1000;
+            this.lasttimestamp = timestamp;
+            delta = Math.round(delta * 100000) / 100000
+            game.config.update(delta)
+            window.requestAnimationFrame(game.config.render)
+        }
+    },
     run: function () {
         console.log("Preloading")
-        preload();
-        create();
-    
-    
-        },
+        game.config.preload();
+        game.preloader.preloading()
+
+
+    },
     preloader: {
         images: {},
         toLoad: 0,
@@ -33,74 +46,64 @@ var game = {
             image.onload = game.preloader.loaded;
             image.src = src;
             this.images[name] = image;
-            
+        },
+        preloading: function () {
+            if (game.preloader.isReady() == false) {
+                window.setTimeout(game.preloader.preloading, 100);
+            } else {
+                console.log("Done");
+                game.config.create()
+                game.config.render(performance.now());
+            }
         }
-
     }
-    
-    
 }
 
-function getMousePos(canvas, evt) {
-    var rect = canvas.getBoundingClientRect();
+var graphics = {
+    draw: function (sprite, pos, angle) {
+        ctx.save();
+        ctx.translate(pos.x, pos.y);
+        ctx.rotate(Math.PI / 180 * angle);
+        var image = sprite.getImage()
+        ctx.drawImage(image, - (image.width / 2), - (image.height / 2));
+        ctx.restore();
+    },
+    Sprite: function (image) {
+        var s = {
+            image: image,
+            
+            getImage: function () {
+                return this.image
+            }
+
+        };
+        return s;
+    }
+
+}
+
+var input = {
+    mouse: {
+        x: 0,
+        y: 0,
+        getPos: function () {
+            return {x: this.x, y: this.y}
+        }
+    }
+}
+
+function getMousePos(cvs, evt) {
+    var rect = cvs.getBoundingClientRect();
     return {
         x: evt.clientX - rect.left,
         y: evt.clientY - rect.top
     };
 }
 
-function preload() {
-    game.preloader.loadImage("blue_ship_1", "assets/ships/ship_blue_1.png")
-    game.preloader.loadImage("blue_ship_2", "assets/ships/ship_blue_2.png")
-    game.preloader.loadImage("blue_ship_3", "assets/ships/ship_blue_3.png")
-    game.preloader.loadImage("blue_ship_4", "assets/ships/ship_blue_4.png")
-    game.preloader.loadImage("blue_ship_5", "assets/ships/ship_blue_5.png")
-    game.preloader.loadImage("red_ship_1", "assets/ships/ship_red_1.png")
-    game.preloader.loadImage("red_ship_2", "assets/ships/ship_red_2.png")
-    game.preloader.loadImage("red_ship_3", "assets/ships/ship_red_3.png")
-    game.preloader.loadImage("red_ship_4", "assets/ships/ship_red_4.png")
-    game.preloader.loadImage("red_ship_5", "assets/ships/ship_red_5.png")
-
-    
-}
-function create() {
-    if (game.preloader.isReady() == false) {
-        window.setTimeout(create, 100);
-    } else {
-        console.log("Done");
-        ship = createShip();
-
-
-        update();
-    }
-}
-
-function update() {
-
-
-    ctx.save();
-    ctx.translate(ship.x, ship.y);
-    ctx.rotate(Math.PI / 180 * ship.rotation);
-    ctx.drawImage(ship.image, - (ship.image.width / 2), - (ship.image.height / 2));
-    ctx.restore();
-
-    window.requestAnimationFrame(update)
-}
-
-function createShip(){
-    var ship = {
-        image: game.preloader.images["blue_ship_1"],
-        x: ctx.canvas.width / 2,
-        y: ctx.canvas.height / 2,
-        rotation: 0
-    }
-    return ship
-}
-
 canvas.addEventListener('mousemove', function (evt) {
     var mousePos = getMousePos(canvas, evt);
-    target.x = mousePos.x;
-    target.y = mousePos.y;
+    input.mouse.x = mousePos.x;
+    input.mouse.y = mousePos.y;
 })
 
 
@@ -108,5 +111,3 @@ canvas.addEventListener('mousemove', function (evt) {
 
 
 
-
-game.run();
