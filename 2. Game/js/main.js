@@ -13,7 +13,7 @@ var shipsManager = {
         for (var s in this.ships) {
             var ship = this.ships[s]
             ship.move()
-            ship.vector.rotate(5 - (Math.random() * 10));
+            ship.vector.rotate(5 - (Math.random()*10));
         }
     },
     draw: function () {
@@ -41,8 +41,6 @@ function preload() {
     game.preloader.loadImage("red_ship_3", "assets/ships/ship_red_3.png")
     game.preloader.loadImage("red_ship_4", "assets/ships/ship_red_4.png")
     game.preloader.loadImage("red_ship_5", "assets/ships/ship_red_5.png")
-
-
 }
 
 

@@ -102,13 +102,12 @@ var util = {
                 return Math.sqrt((this.x * this.x) + (this.y * this.y))
             },
             rotate: function (a) {
-                theta = Math.PI / 180 * a
-                cs = Math.cos(theta)
-                sn = Math.sin(theta)
-                this.x = this.x * cs - this.y * sn;
-                this.y = this.x * sn + this.y * cs;
+                var angle = (this.toAngle() * 180/Math.PI) + a
+                this.angleTo(angle)
+                
+                
             },
-            toAngle: function () {return Math.atan2(this.y, this.x) },
+            toAngle: function () {return -Math.atan2(-this.y, this.x) },
             angleTo: function (a) {
                 var len = this.length()
                 this.x = len * Math.cos(Math.PI / 180 * a)
