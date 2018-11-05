@@ -3,7 +3,7 @@ var canvas = document.getElementById('stage');
 var ctx = canvas.getContext('2d');
 ctx.canvas.width  = 800;
 ctx.canvas.height = 800;
-
+var count = 0
 
 
 var game = {
@@ -13,11 +13,17 @@ var game = {
         create: function () { },
         update: function () { },
         render: function (timestamp) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            var delta = (timestamp - this.lasttimestamp) / 1000;
-            this.lasttimestamp = timestamp;
-            delta = Math.round(delta * 100000) / 100000
-            game.config.update(delta)
+            if (count == 8) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                var delta = (timestamp - this.lasttimestamp) / 1000;
+                this.lasttimestamp = timestamp;
+                delta = Math.round(delta * 100000) / 100000
+                game.config.update(delta)
+                count = 0;
+            } else {
+                count++
+
+            }
             window.requestAnimationFrame(game.config.render)
         }
     },
@@ -83,40 +89,50 @@ var util = {
             x: x || 0,
             y: y || 0,
             add: function (v) {
-                this.x += v.x
-                this.y += v.y
+                this.x += v.x;
+                this.y += v.y;
+                return this;
             },
             subtract: function (v) {
-                this.x -= v.x
-                this.y -= v.y
+                this.x -= v.x;
+                this.y -= v.y;
+                return this;    
             },
             normalise: function () {
                 this.x /= this.length();
                 this.y /= this.length();
+                return this;
             },
             scale: function (s) {
-                this.x *= s
-                this.y *= s
+                this.x *= s;
+                this.y *= s;
+                return this;
             },
             length: function () {
-                return Math.sqrt((this.x * this.x) + (this.y * this.y))
+                return Math.sqrt((this.x * this.x) + (this.y * this.y));
             },
             rotate: function (a) {
                 var angle = (this.toAngle() * 180/Math.PI) + a
-                this.angleTo(angle)
+                this.angleTo(angle);
+                return this;
                 
                 
             },
             toAngle: function () {return -Math.atan2(-this.y, this.x) },
             angleTo: function (a) {
-                var len = this.length()
-                this.x = len * Math.cos(Math.PI / 180 * a)
-                this.y = len * Math.sin(Math.PI / 180 * a)
+                var len = this.length();
+                this.x = len * Math.cos(Math.PI / 180 * a);
+                this.y = len * Math.sin(Math.PI / 180 * a);
+                return this;
 
             },
             set: function (x, y) {
-                this.x = x
-                this.y = y
+                this.x = x;
+                this.y = y;
+                return this;
+            },
+            clone: function () {
+                return util.vector2d(this.x, this.y)
             }
 
         }
