@@ -7,8 +7,8 @@ var steeringAI = {
         arrival: 3
     },
     speeds: {
-        maxSpeed: 300,
-        angularRotation: 10
+        maxSpeed: 10,
+        angularRotation: 0.2
 
     },
     newAgent: function (object) {
@@ -55,10 +55,10 @@ var steeringAI = {
                 var desVel = this.target.clone().subtract(pos).normalise(); // normalise
                 var steering = desVel.clone().subtract(vel)
                 steering.scale(steeringAI.speeds.angularRotation)
-                steering.scale(game.delta)
+                //steering.scale(game.delta)
                 vel.add(steering).normalise()
                 vel.scale(steeringAI.speeds.maxSpeed)
-                vel.scale(game.delta)
+                //vel.scale(game.delta)
                 pos.add(vel)
                 
             },

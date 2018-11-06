@@ -72,7 +72,7 @@ function preload() {
 
 
 function create() {
-    for (var x = 0; x < 3000; x++) {
+    for (var x = 0; x < 2000; x++) {
         ship = makeShip(game.preloader.images["blue_ship_1"])
         shipsManager.add(ship)
     }

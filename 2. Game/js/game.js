@@ -79,7 +79,7 @@ var graphics = {
         ctx.translate(pos.x, pos.y);
         ctx.rotate(angle - (Math.PI / 180 * 90));
         var image = sprite.getImage();
-        ctx.drawImage(image, - 5, - 5,10,10);
+        ctx.drawImage(image, - 2, - 2,4,4);
         ctx.restore();
     },
     Sprite: function (image) {
