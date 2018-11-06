@@ -72,16 +72,15 @@ function preload() {
 
 
 function create() {
-    for (var x = 0; x < 1; x++) {
+    for (var x = 0; x < 3000; x++) {
         ship = makeShip(game.preloader.images["blue_ship_1"])
-        console.log(ship)
         shipsManager.add(ship)
     }
 }
 
 
 function update(delta) {
-    shipsManager.move()
+    shipsManager.move(delta)
     shipsManager.draw()
     mousetarget.set(input.mouse.x, input.mouse.y)
 
