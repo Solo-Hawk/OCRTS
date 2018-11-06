@@ -11,14 +11,14 @@ var steeringAI = {
         var a = {
             host: object,
             state: 0,
-            target: util.vector2d(200, 200),
+            target: null,
             // Controlling Variables
             maxVel: 3,
             force: 3,
 
 
             setTarget: function (object) {
-
+                this.target = object
             },
             getTarget: function () {
                 return target
@@ -46,21 +46,17 @@ var steeringAI = {
                 }
             },
             seek: function () {
-                console.log("---")
+                
                 var pos = this.getPos();
-                var vel = this.getVector();
+                var vel = this.getVector().normalise();
                 var desVel = this.target.clone().subtract(pos).normalise(); // normalise
-                console.log(desVel)
-                console.log(pos.x + " " +  pos.y)
-                console.log(desVel.x + " " + desVel.y)
-
-                console.log((pos.y - desVel.y) + " " + (pos.x - desVel.x))
-                var angle = Math.atan2(pos.y - desVel.y, pos.x - desVel.x);
-                console.log(angle)
-                console.log(angle * 180 / Math.PI)
-                vel.rotate(angle * 180 / Math.PI);
+                var steering = desVel.clone().subtract(vel)
+                steering.normalise().scale(0.5)
+                var distance = steering.clone().subtract(desVel)
+                distance = distance.length()
+                console.log(steering)
+                vel.add(steering).normalise().scale(distance)
                 pos.add(vel)
-
 
 
 
@@ -72,16 +68,21 @@ var steeringAI = {
                 ctx.strokeStyle = "#FF0000";
                 ctx.beginPath();
                 ctx.moveTo(pos.x, pos.y);
-                ctx.lineTo(pos.x + (vel.x * 30), pos.y + (vel.y * 30))
+                ctx.lineTo(pos.x + (vel.x * 50), pos.y + (vel.y * 50))
                 ctx.stroke();
                 ctx.closePath();
                 ctx.strokeStyle = "#0000FF";
                 ctx.beginPath();
                 ctx.moveTo(pos.x, pos.y);
-                ctx.lineTo(pos.x + (desVel.x * 300), pos.y + (desVel.y * 300))
+                ctx.lineTo(pos.x + (desVel.x * 150), pos.y + (desVel.y * 150))
                 ctx.stroke();
                 ctx.closePath();
                 ctx.strokeStyle = "#00FF00";
+                ctx.beginPath();
+                ctx.moveTo(pos.x + (vel.x * 50), pos.y + (vel.y * 50));
+                ctx.lineTo(pos.x + (vel.x * 50) + (steering.x * 100), pos.y + (vel.y * 50)+(steering.y * 100))
+                ctx.stroke();
+                ctx.closePath();
                 ctx.beginPath();
                 ctx.arc(this.target.x, this.target.y, 10, 0, 2 * Math.PI);
                 ctx.stroke();

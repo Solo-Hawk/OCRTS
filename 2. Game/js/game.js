@@ -13,7 +13,7 @@ var game = {
         create: function () { },
         update: function () { },
         render: function (timestamp) {
-            if (count == 8) {
+            if (count == 10) {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 var delta = (timestamp - this.lasttimestamp) / 1000;
                 this.lasttimestamp = timestamp;
@@ -99,8 +99,9 @@ var util = {
                 return this;    
             },
             normalise: function () {
-                this.x /= this.length();
-                this.y /= this.length();
+                var len = this.length();
+                this.x /= len;
+                this.y /= len;
                 return this;
             },
             scale: function (s) {
@@ -112,7 +113,8 @@ var util = {
                 return Math.sqrt((this.x * this.x) + (this.y * this.y));
             },
             rotate: function (a) {
-                var angle = (this.toAngle() * 180/Math.PI) + a
+                var angle = (this.toAngle() * 180 / Math.PI) + a
+                console.log(angle)
                 this.angleTo(angle);
                 return this;
                 

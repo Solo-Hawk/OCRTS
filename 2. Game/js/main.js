@@ -3,6 +3,8 @@ game.config.preload = preload;
 game.config.create = create;
 game.config.update = update;
 
+var mousetarget = util.vector2d(0, 0)
+
 function makeShip(sprite) {
     var s = {
         sprite: graphics.Sprite(sprite),
@@ -14,6 +16,8 @@ function makeShip(sprite) {
         }
     }
     s.steering = steeringAI.newAgent(s)
+    s.steering.setTarget(mousetarget)
+    console.log("Target Set")
     return s
 }
 
@@ -79,10 +83,9 @@ function create() {
 function update(delta) {
     shipsManager.move()
     shipsManager.draw()
+    mousetarget.set(input.mouse.x, input.mouse.y)
+
 }
 
-
-
-var target = { x: 0, y: 0 };
 
 game.run()
