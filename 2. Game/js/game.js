@@ -16,8 +16,9 @@ var game = {
             
             if (count == 0) {
                 timestamp = Math.floor(timestamp)
-                
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+
                 var delta = (timestamp - game.config.lasttimestamp) / 1000;
                 game.config.lasttimestamp = timestamp;
                 
@@ -79,6 +80,15 @@ var graphics = {
         ctx.rotate(angle - (Math.PI / 180 * 90));
         var image = sprite.getImage();
         ctx.drawImage(image, -sprite.width / 2, - sprite.height / 2, sprite.width, sprite.height);
+        ctx.restore();
+    },
+    drawArc: function (pos,rad,s,e) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, rad, s, e);
+        ctx.lineWidth = 5
+        ctx.stroke();
+        ctx.closePath();
         ctx.restore();
     },
     Sprite: function (image, h , w) {
@@ -158,8 +168,22 @@ var input = {
         getPos: function () {
             return {x: this.x, y: this.y}
         }
+    },
+    addOnClickEvent: function (func) {
+        this.onClickEvents.push(func)
+    },
+    onClickEvents: [],
+    clickEvent: function (mouse) {
+        for (var f in this.onClickEvents) {
+            var func = this.onClickEvents[f]
+            func(mouse)
+        }
     }
 }
+
+canvas.addEventListener('click', function (evt) {
+    input.clickEvent(getMousePos(canvas,evt))
+})
 
 function getMousePos(cvs, evt) {
     var rect = cvs.getBoundingClientRect();
