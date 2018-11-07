@@ -136,7 +136,6 @@ var nodeManager = {
         
 
     }
-    
 }
 
 var shipsManager = {
@@ -193,11 +192,9 @@ var ocrts = {
     computerShips: [],
     addPlayerShip: function(ship) {
         this.playerShips.push(ship)
-        console.log("PlayerShip Added")
     },
     addComputerShip: function(ship) {
         this.computerShips.push(ship)
-        console.log("CompShip Added")
     }
 }
 
@@ -224,15 +221,15 @@ var spawner = {
     },
     update: function () {
 
-        if (performance.now() - spawner.lastSpawn > 800) {
+        if (performance.now() - spawner.lastSpawn > 4000) {
             var count
             count = spawner.maxSpawn - ocrts.playerShips.length
-            spawn = count > 10 ? 10 : count
+            spawn = count > 20 ? 20 : count
             for (var x = 0; x < spawn; x++) {
                 spawner.create.playerShip()
             }
             count = spawner.maxSpawn - ocrts.computerShips.length
-            spawn = count > 10 ? 10 : count
+            spawn = count > 20 ? 20 : count
             for (var x = 0; x < spawn; x++) {
                 spawner.create.computerShip()
             }
@@ -256,6 +253,13 @@ var spawner = {
     }
 }
 
+var ui = {
+    draw: function () {
+        if (ocrts.player.input.state == ocrts.player.input.states.selecting) {
+            graphics.drawLine(nodeManager.selected.pos, input.mouse.getPos())
+        }
+    }
+}
 
 function preload() {
     game.preloader.loadImage("blue_ship_1", "assets/ships/ship_blue_1.png")
@@ -273,7 +277,6 @@ function preload() {
     game.preloader.loadImage("neutral_base_1", "assets/bases/neutral_base_01.png")
 }
 
-
 function create() {
 
     nodeManager.add(100, 100, 0) //0
@@ -283,7 +286,9 @@ function create() {
     nodeManager.add(700, 700,1) //4
 
     spawner.config.player.home = nodeManager.nodes[0]
+    spawner.config.player.spawn = {x: nodeManager.nodes[0].pos.x, y: nodeManager.nodes[0].pos.y}
     spawner.config.computer.home = nodeManager.nodes[4]
+    spawner.config.computer.spawn= {x: nodeManager.nodes[4].pos.x, y: nodeManager.nodes[4].pos.y}
 
     input.addOnClickEvent(function (mouse) {
         ocrts.player.input.click(mouse)
@@ -291,7 +296,6 @@ function create() {
 
     spawner.start()
 }
-
 
 function update(delta) {
     shipsManager.move(delta)
@@ -301,9 +305,11 @@ function update(delta) {
     nodeManager.draw()
 
     spawner.update()
+
+    ui.draw();
+
     mousetarget.set(input.mouse.x, input.mouse.y)
 
 }
-
 
 game.run()

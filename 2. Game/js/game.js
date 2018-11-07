@@ -91,6 +91,15 @@ var graphics = {
         ctx.closePath();
         ctx.restore();
     },
+    drawLine: function (start, end) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(start.x, start.y);
+        ctx.lineTo(end.x, end.y)
+        ctx.stroke();
+        ctx.closePath();
+        ctx.restore();
+    },
     Sprite: function (image, h , w) {
         var s = {
             image: image,
