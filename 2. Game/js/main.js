@@ -11,11 +11,10 @@ function makeShip(sprite, spawn) {
         range: 80,
         reload: 800 + (Math.random() * 400), // Random reload factor
         lastShot: performance.now(),
-        sprite: graphics.Sprite(sprite,6,6),
+        sprite: graphics.Sprite(sprite,20,20),
         pos: util.vector2d(spawn.x, spawn.y),
         vector: util.vector2d(1 - (Math.random() * 2), 1 - (Math.random() * 2)), // This should actually be called "velocity"
         steering: null,
-
         node: null,
         setNode: function (node) {
             this.node = node
@@ -35,7 +34,6 @@ function makeShip(sprite, spawn) {
             }
             for (s in targets) {
                 var ship = targets[s]
-                
                 if (this.pos.clone().subtract(ship.pos).length() < this.range) {
                     graphics.drawLine(this.pos, ship.pos)
                     ship.damage(4)
@@ -64,22 +62,61 @@ var nodeManager = {
         eC: 1
 
     },
-    add: function (x, y, side) {
+    add: function (x, y, team) {
         var image;
-        if (side == window.undefined) {
+        if (team == ocrts.team.neutral) {
             image = "neutral_base_1"
         } else {
-            image = side == 0 ? "blue_base_1" : "red_base_1"
+            image = team == ocrts.team.player ? "blue_base_1" : "red_base_1"
         }
         var n = {
+            home:false,
+            team: team || 2,
+            capture: 0,
             rotation: 0,
-            sprite: graphics.Sprite(game.preloader.images[image],40/4,168/4 ),
+            spriteSet: [
+                graphics.Sprite(game.preloader.images["blue_base_1"], 40 / 2, 168 / 2),
+                graphics.Sprite(game.preloader.images["red_base_1"], 40 / 2, 168 / 2),
+                graphics.Sprite(game.preloader.images["neutral_base_1"], 40 / 2, 168 / 2)
+            ],
+            sprite: graphics.Sprite(game.preloader.images[image], 40 / 2, 168 / 2),
             pos: util.vector2d(x, y),
-            selected: false
+            selected: false,
+            update: function () {
+                if (!this.home) {
+                    if (this.capture != 0) {
+                        this.capture += this.capture > 0 ? -1 : 1
+                    }
+                    if (-20 < this.capture && this.capture < 20) {
+                        this.team = ocrts.team.neutral
+                        this.sprite = this.spriteSet[ocrts.team.neutral]
+                    }
+                }
+            },
+            addCapture: function (c) {
+                this.capture += c
+                if (this.capture < -99) {
+                    this.capture = -100
+                    this.team = ocrts.team.computer
+                    this.sprite = graphics.Sprite(game.preloader.images["red_base_1"], 40 / 2, 168 / 2 )
+                
+                }
+                if (this.capture > 99) {
+                    this.capture = 100
+                    this.team = ocrts.team.player
+                    this.sprite = graphics.Sprite(game.preloader.images["blue_base_1"], 40 / 2, 168 / 2 )
+                
+                }
+                
+            }
         }
-
-
         this.nodes.push(n)
+    },
+    update: function () {
+        for (var n in this.nodes) {
+            var node = this.nodes[n]
+            node.update()
+        }
     },
     draw: function () {
         for (var n in this.nodes) {
@@ -89,7 +126,7 @@ var nodeManager = {
             node.rotation = node.rotation > 100 ? 0 : node.rotation
             if (node.selected) {
                 graphics.drawArc(node.pos,
-                    22,
+                    44,
                     ((2 * Math.PI) / 100) * this.arc.s,
                     ((2 * Math.PI) / 100) * this.arc.e
                 )
@@ -121,11 +158,11 @@ var nodeManager = {
             node.selected = false
         }
     },
-    checkNodeSelection: function (pos) {
+    checkNodeSelection: function (pos) {// Too Messy
         for (var n in this.nodes) {
             var node = this.nodes[n]
             if (
-                node.pos.x - 10 < pos.x && pos.x < node.pos.x + 10 && node.pos.y - 10 < pos.y && pos.y < node.pos.y + 10
+                node.pos.x - 20 < pos.x && pos.x < node.pos.x + 20 && node.pos.y - 20 < pos.y && pos.y < node.pos.y + 20
             ) {
                 node.selected = true
                 this.selected = node
@@ -137,12 +174,12 @@ var nodeManager = {
         }
         return false
     },
-    sendToNode: function (pos) {
+    sendToNode: function (pos) {// Too Messy
         console.log(this.selected)
         var targetNode = null
         for (var n in this.nodes) {
             var node = this.nodes[n]
-            if (node.pos.x - 10 < pos.x && pos.x < node.pos.x + 10 && node.pos.y - 10 < pos.y && pos.y < node.pos.y + 10) {
+            if (node.pos.x - 20 < pos.x && pos.x < node.pos.x + 20 && node.pos.y - 20 < pos.y && pos.y < node.pos.y + 20) {
                 targetNode = node
             }
         }
@@ -192,6 +229,11 @@ var shipsManager = {
 }
 
 var ocrts = {
+    team: {// now that there are team statics, clean game-wide checks into their respective objects
+        player:0,
+        computer:1,
+        neutral:2
+    },
     player: {
         input: {
             state: 0,
@@ -223,8 +265,7 @@ var ocrts = {
     addComputerShip: function(ship) {
         this.computerShips.push(ship)
     },
-    update: function () {
-        console.log("update")
+    update: function () { // Too Messy
         for (s in this.playerShips) {
             var ship = this.playerShips[s]
             ship.shoot(this.computerShips)
@@ -239,7 +280,21 @@ var ocrts = {
                 this.playerShips.splice(this.playerShips.indexOf(ship),1)
                 shipsManager.ships.splice(shipsManager.ships.indexOf(ship),1)
             }
-            
+        }
+        for (s in this.computerShips) {
+            var ship = this.computerShips[s] 
+            if (ship.isDead()) {
+                this.computerShips.splice(this.computerShips.indexOf(ship), 1)
+                shipsManager.ships.splice(shipsManager.ships.indexOf(ship), 1)
+            }
+        }
+        for (s in this.playerShips) {
+            var ship = this.playerShips[s]
+            if (ship.node != spawner.config.player.home && ship.node != spawner.config.computer.home) {
+                if (ship.pos.clone().subtract(ship.node.pos).length() < 80) {// quick hack - clean up - make static vector functions for this
+                    ship.node.addCapture(1)
+                }
+            }
         }
         for (s in this.computerShips) {
             var ship = this.computerShips[s] 
@@ -253,29 +308,27 @@ var ocrts = {
 }
 
 var spawner = {
-    maxSpawn: 500,
+    maxSpawn: 300,
     lastSpawn : 0,
     config: {
         player: {
-            spawn: {x: 0, y:0},
             home: null
 
         },
         computer: {
-            spawn: { x: 800, y: 800 },
             home: null
         }
     },
     start: function () {
-        for (var x = 0; x < 50; x++) {
+        for (var x = 0; x < 20; x++) {
             spawner.create.playerShip()
-        } for (var x = 0; x < 50; x++) {
+        } for (var x = 0; x < 20; x++) {
             spawner.create.computerShip()
         }
     },
     update: function () {
 
-        if (performance.now() - spawner.lastSpawn > 4000) {
+        if (performance.now() - spawner.lastSpawn > 4000) {// Clean up
             var count
             count = spawner.maxSpawn - ocrts.playerShips.length
             spawn = count > 20 ? 20 : count
@@ -292,14 +345,14 @@ var spawner = {
     },
     create: {
         playerShip: function () {
-            var ship = makeShip(game.preloader.images[["blue_ship_1", "blue_ship_2", "blue_ship_3", "blue_ship_4", "blue_ship_5"][Math.floor(Math.random() * 5)]],spawner.config.player.spawn);
+            var ship = makeShip(game.preloader.images[["blue_ship_1", "blue_ship_2", "blue_ship_3", "blue_ship_4", "blue_ship_5"][Math.floor(Math.random() * 5)]],spawner.config.player.home.pos);
             shipsManager.add(ship)
             ocrts.addPlayerShip(ship)
             ship.setNode(spawner.config.player.home)
 
         },
         computerShip: function () {
-            var ship = makeShip(game.preloader.images[["red_ship_1", "red_ship_2", "red_ship_3", "red_ship_4", "red_ship_5"][Math.floor(Math.random() * 5)]], spawner.config.computer.spawn);
+            var ship = makeShip(game.preloader.images[["red_ship_1", "red_ship_2", "red_ship_3", "red_ship_4", "red_ship_5"][Math.floor(Math.random() * 5)]], spawner.config.computer.home.pos);
             shipsManager.add(ship)
             ocrts.addComputerShip(ship)
             ship.setNode(spawner.config.computer.home)
@@ -331,22 +384,21 @@ function preload() {
     game.preloader.loadImage("neutral_base_1", "assets/bases/neutral_base_01.png")
 }
 
-function create() {
+function create() {// Clean up
 
-    nodeManager.add(100, 100, 0) //0
-    nodeManager.add(Math.floor(Math.random() * 800), Math.floor(Math.random() * 800)) //3
-    nodeManager.add(Math.floor(Math.random() * 800), Math.floor(Math.random() * 800)) //3
-    nodeManager.add(Math.floor(Math.random() * 800), Math.floor(Math.random() * 800)) //3
-    nodeManager.add(Math.floor(Math.random() * 800), Math.floor(Math.random() * 800)) //3
-    nodeManager.add(Math.floor(Math.random() * 800), Math.floor(Math.random() * 800)) //3
-    nodeManager.add(Math.floor(Math.random() * 800), Math.floor(Math.random() * 800)) //3
-    nodeManager.add(Math.floor(Math.random() * 800), Math.floor(Math.random() * 800)) //3
-    nodeManager.add(Math.floor(Math.random() * 800), Math.floor(Math.random() * 800)) //3
-    nodeManager.add(700, 700,1) //4
+    nodeManager.add(100, 100, ocrts.team.player) //0
+    nodeManager.add(200 + Math.floor(Math.random() * 400), Math.floor(200 + Math.random() * 400),ocrts.team.neutral) //3
+    nodeManager.add(200 + Math.floor(Math.random() * 400), Math.floor(200 + Math.random() * 400),ocrts.team.neutral) //3
+    nodeManager.add(200 + Math.floor(Math.random() * 400), Math.floor(200 + Math.random() * 400),ocrts.team.neutral) //3
+    nodeManager.add(200 + Math.floor(Math.random() * 400), Math.floor(200 + Math.random() * 400),ocrts.team.neutral) //3
+    nodeManager.add(700, 700, ocrts.team.computer) //4
 
+    // clean up - too hacky
     spawner.config.player.home = nodeManager.nodes[0]
+    nodeManager.nodes[0].home = true
     spawner.config.player.spawn = {x: nodeManager.nodes[0].pos.x, y: nodeManager.nodes[0].pos.y}
-    spawner.config.computer.home = nodeManager.nodes[nodeManager.nodes.length-1]
+    spawner.config.computer.home = nodeManager.nodes[nodeManager.nodes.length - 1]
+    nodeManager.nodes[nodeManager.nodes.length - 1].home = true
     spawner.config.computer.spawn = { x: nodeManager.nodes[nodeManager.nodes.length - 1].pos.x, y: nodeManager.nodes[nodeManager.nodes.length - 1].pos.y}
 
     input.addOnClickEvent(function (mouse) {
@@ -359,6 +411,7 @@ function create() {
 function update(delta) {
     shipsManager.move(delta)
     shipsManager.update()
+    nodeManager.update()
     ocrts.update()
     shipsManager.draw()
     nodeManager.draw()
