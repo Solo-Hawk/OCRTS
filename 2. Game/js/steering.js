@@ -1,22 +1,40 @@
 var steeringAI = {
 
     states: {
-        seek: 0,
-        flee: 1,
-        orbit: 2,
-        arrival: 3
+        seeknwander: 0,
+        orbit: 1,
+        seek: 2,
+        flee: 3,
+        arrival: 4,
+        wander: 5
     },
     speeds: {
-        maxSpeed: 10,
-        angularRotation: 0.2
+        maxSpeed: 2,
+        angularRotation: 0.4,
+        seek: {
+            offset:200
+        },
+        orbit: {
+            maxSpeed: 1,
+            angularRotation: 0.2
+        },
+        wander: {
+            maxSpeed: 1,
+            angularRotation: 0.1,
+            radius: 1,
+            reach: 40
+        }
 
     },
     newAgent: function (object) {
         var a = {
+            
             host: object,
             state: 0,
             target: null,
             // Controlling Variables
+
+            lastDecision: game.config.lasttimestamp,
 
             setTarget: function (object) {
                 this.target = object
@@ -33,6 +51,9 @@ var steeringAI = {
             update: function () {
                 if(this.target != null){
                     switch (this.state) {
+                        case steeringAI.states.seeknwander:
+                            this.seekNWander();
+                            break;
                         case steeringAI.states.seek:
                             this.seek();
                             break;
@@ -45,14 +66,35 @@ var steeringAI = {
                         case steeringAI.states.arrival:
                             this.arrival();
                             break;
-
+                        case steeringAI.states.wander:
+                            this.wander();
+                            break;
                     }
+                }
+            },
+            seekNWander: function () {
+                var pos = this.getPos();
+                var distanceVector = this.target.clone().subtract(pos)
+                var distance = distanceVector.length();
+                if (distance < 30) {
+                    this.flee();
+                }else if (distance < steeringAI.speeds.wander.reach) {
+                    this.wander();
+                } else {
+                    this.seek()
                 }
             },
             seek: function () {
                 var pos = this.getPos();
                 var vel = this.getVector().normalise();
-                var desVel = this.target.clone().subtract(pos).normalise(); // normalise
+                var desVel =
+                    this.target.clone()
+                        .add(util.vector2d(
+                            steeringAI.speeds.seek.offset - Math.random() * (steeringAI.speeds.seek.offset * 2),
+                            steeringAI.speeds.seek.offset - Math.random() * (steeringAI.speeds.seek.offset * 2)
+                        ))
+                        .subtract(pos)
+                        .normalise(); // normalise
                 var steering = desVel.clone().subtract(vel)
                 steering.scale(steeringAI.speeds.angularRotation)
                 //steering.scale(game.delta)
@@ -60,7 +102,6 @@ var steeringAI = {
                 vel.scale(steeringAI.speeds.maxSpeed)
                 //vel.scale(game.delta)
                 pos.add(vel)
-                
             },
             flee: function () {
                 var pos = this.getPos();
@@ -74,9 +115,25 @@ var steeringAI = {
                 pos.add(vel)
             },
             orbit: function () {
-
             },
             arrival: function () {
+
+            },
+            wander: function () {
+
+                var pos = this.getPos();
+                var vel = this.getVector()
+                if (performance.now() - this.lastDecision > 10) {
+                    for (i = 0; i < 3; i++) {
+                        var force = util.vector2d(1 - Math.random() * 2, 1 - Math.random() * 2)
+                        force.normalise().scale(0.2)
+                        vel.add(force)
+                    }
+                    this.lastDecision = game.config.lasttimestamp
+                }
+
+                vel.normalise().scale(steeringAI.speeds.wander.maxSpeed)
+                pos.add(vel)
 
             }
         }

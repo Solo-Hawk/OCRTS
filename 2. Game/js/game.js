@@ -15,7 +15,6 @@ var game = {
         render: function (timestamp) {
             
             if (count == 0) {
-                
                 timestamp = Math.floor(timestamp)
                 
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -79,15 +78,17 @@ var graphics = {
         ctx.translate(pos.x, pos.y);
         ctx.rotate(angle - (Math.PI / 180 * 90));
         var image = sprite.getImage();
-        ctx.drawImage(image, - 2, - 2,4,4);
+        ctx.drawImage(image, -sprite.width / 2, - sprite.height / 2, sprite.width, sprite.height);
         ctx.restore();
     },
-    Sprite: function (image) {
+    Sprite: function (image, h , w) {
         var s = {
             image: image,
             getImage: function () {
                 return this.image
-            }
+            },
+            width: w || 6,
+            height: h || 6
         };
         return s;
     }

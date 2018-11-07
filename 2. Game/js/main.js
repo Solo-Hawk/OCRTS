@@ -7,12 +7,15 @@ var mousetarget = util.vector2d(0, 0)
 
 function makeShip(sprite) {
     var s = {
-        sprite: graphics.Sprite(sprite),
+        sprite: graphics.Sprite(sprite,8,8),
         pos: util.vector2d(400, 400),
         vector: util.vector2d(1 - (Math.random() * 2), 1 - (Math.random() * 2)), // This should of actually be called "velocity"
         steering: null,
         move: function () {
             this.steering.update();
+        },
+        update: function () {
+
         }
     }
     s.steering = steeringAI.newAgent(s)
@@ -32,6 +35,12 @@ var shipsManager = {
             ship.move()
         }
     },
+    update: function () {
+        for (var s in this.ships) {
+            var ship = this.ships[s]
+            ship.update()
+        }
+    },
     draw: function () {
         for (var s in this.ships) {
             var ship = this.ships[s]
@@ -43,8 +52,21 @@ var shipsManager = {
 
 var nodeManager = {
     nodes: [],
+
     add: function (x, y) {
-        this.nodes.push({ x: x, y: y })
+        var n = {
+            sprite: graphics.Sprite(game.preloader.images["red_ship_1"],20,20),
+            pos: util.vector2d(x,y)
+        }
+
+
+        this.nodes.push(n)
+    },
+    draw: function () {
+        for (var n in this.nodes) {
+            var node = this.nodes[n]
+            graphics.draw(node.sprite, node.pos, 90)
+        }
     }
 }
 
@@ -72,16 +94,24 @@ function preload() {
 
 
 function create() {
-    for (var x = 0; x < 2000; x++) {
+    for (var x = 0; x < 200; x++) {
         ship = makeShip(game.preloader.images["blue_ship_1"])
         shipsManager.add(ship)
     }
+    nodeManager.add(100,100)
+    nodeManager.add(200,200)
+    nodeManager.add(400,400)
+    nodeManager.add(600,600)
+    nodeManager.add(700,700)
 }
 
 
 function update(delta) {
     shipsManager.move(delta)
+    shipsManager.update()
+    
     shipsManager.draw()
+    nodeManager.draw()
     mousetarget.set(input.mouse.x, input.mouse.y)
 
 }
