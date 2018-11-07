@@ -7,9 +7,13 @@ var mousetarget = util.vector2d(0, 0)
 
 function makeShip(sprite, spawn) {
     var s = {
+        health:10,
+        range: 80,
+        reload: 800 + (Math.random() * 400), // Random reload factor
+        lastShot: performance.now(),
         sprite: graphics.Sprite(sprite,6,6),
         pos: util.vector2d(spawn.x, spawn.y),
-        vector: util.vector2d(1 - (Math.random() * 2), 1 - (Math.random() * 2)), // This should of actually be called "velocity"
+        vector: util.vector2d(1 - (Math.random() * 2), 1 - (Math.random() * 2)), // This should actually be called "velocity"
         steering: null,
 
         node: null,
@@ -21,7 +25,30 @@ function makeShip(sprite, spawn) {
             this.steering.update();
         },
         update: function () {
-
+        },
+        canShoot: function () {
+            return performance.now() - this.lastShot > this.reload
+        },
+        shoot: function (targets) {
+            if (!this.canShoot()) {
+                return
+            }
+            for (s in targets) {
+                var ship = targets[s]
+                
+                if (this.pos.clone().subtract(ship.pos).length() < this.range) {
+                    graphics.drawLine(this.pos, ship.pos)
+                    ship.damage(4)
+                }
+            }
+            this.lastShot = performance.now()
+            this.reload = 800 + (Math.random() * 400)
+        },
+        damage: function (d) {
+            this.health -= d
+        },
+        isDead: function () {
+            return this.health < 1
         }
     }
     s.steering = steeringAI.newAgent(s)
@@ -195,11 +222,38 @@ var ocrts = {
     },
     addComputerShip: function(ship) {
         this.computerShips.push(ship)
+    },
+    update: function () {
+        console.log("update")
+        for (s in this.playerShips) {
+            var ship = this.playerShips[s]
+            ship.shoot(this.computerShips)
+        }
+        for (s in this.computerShips) {
+            var ship = this.computerShips[s] 
+            ship.shoot(this.playerShips)
+        }
+        for (s in this.playerShips) {
+            var ship = this.playerShips[s]
+            if (ship.isDead()) {
+                this.playerShips.splice(this.playerShips.indexOf(ship),1)
+                shipsManager.ships.splice(shipsManager.ships.indexOf(ship),1)
+            }
+            
+        }
+        for (s in this.computerShips) {
+            var ship = this.computerShips[s] 
+            if (ship.isDead()) {
+                this.computerShips.splice(this.computerShips.indexOf(ship), 1)
+                shipsManager.ships.splice(shipsManager.ships.indexOf(ship), 1)
+            }
+        }
+        
     }
 }
 
 var spawner = {
-    maxSpawn: 1000,
+    maxSpawn: 500,
     lastSpawn : 0,
     config: {
         player: {
@@ -213,9 +267,9 @@ var spawner = {
         }
     },
     start: function () {
-        for (var x = 0; x < 300; x++) {
+        for (var x = 0; x < 50; x++) {
             spawner.create.playerShip()
-        } for (var x = 0; x < 300; x++) {
+        } for (var x = 0; x < 50; x++) {
             spawner.create.computerShip()
         }
     },
@@ -280,15 +334,20 @@ function preload() {
 function create() {
 
     nodeManager.add(100, 100, 0) //0
-    nodeManager.add(200, 200) //1
-    nodeManager.add(400, 400) //2
-    nodeManager.add(600, 600) //3
+    nodeManager.add(Math.floor(Math.random() * 800), Math.floor(Math.random() * 800)) //3
+    nodeManager.add(Math.floor(Math.random() * 800), Math.floor(Math.random() * 800)) //3
+    nodeManager.add(Math.floor(Math.random() * 800), Math.floor(Math.random() * 800)) //3
+    nodeManager.add(Math.floor(Math.random() * 800), Math.floor(Math.random() * 800)) //3
+    nodeManager.add(Math.floor(Math.random() * 800), Math.floor(Math.random() * 800)) //3
+    nodeManager.add(Math.floor(Math.random() * 800), Math.floor(Math.random() * 800)) //3
+    nodeManager.add(Math.floor(Math.random() * 800), Math.floor(Math.random() * 800)) //3
+    nodeManager.add(Math.floor(Math.random() * 800), Math.floor(Math.random() * 800)) //3
     nodeManager.add(700, 700,1) //4
 
     spawner.config.player.home = nodeManager.nodes[0]
     spawner.config.player.spawn = {x: nodeManager.nodes[0].pos.x, y: nodeManager.nodes[0].pos.y}
-    spawner.config.computer.home = nodeManager.nodes[4]
-    spawner.config.computer.spawn= {x: nodeManager.nodes[4].pos.x, y: nodeManager.nodes[4].pos.y}
+    spawner.config.computer.home = nodeManager.nodes[nodeManager.nodes.length-1]
+    spawner.config.computer.spawn = { x: nodeManager.nodes[nodeManager.nodes.length - 1].pos.x, y: nodeManager.nodes[nodeManager.nodes.length - 1].pos.y}
 
     input.addOnClickEvent(function (mouse) {
         ocrts.player.input.click(mouse)
@@ -300,7 +359,7 @@ function create() {
 function update(delta) {
     shipsManager.move(delta)
     shipsManager.update()
-    
+    ocrts.update()
     shipsManager.draw()
     nodeManager.draw()
 
