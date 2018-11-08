@@ -230,8 +230,46 @@ var shipsManager = {
 
 var ocrts = {
     computer: {
-        lastdecision: performance.now()
-    },
+        lastdecision: performance.now(),
+        thinktime: 500,
+        update: function () {
+            if (performance.now() - ocrts.computer.lastdecision > ocrts.computer.thinktime) {
+                var nodes = []
+                var targets = []
+                for (n in nodeManager.nodes) {
+                    var node = nodeManager.nodes[n]
+                    if (node.team == ocrts.team.computer) {
+                        nodes.push(node)
+                    } else {
+                        targets.push(node)
+                    }
+                }
+                for (n in nodes) {
+                    var node = nodes[n]
+                    var targetNode = targets[Math.floor(Math.random() * targets.length)]
+                    var shipsToMove = []
+                    for (s = 0; s < ocrts.computerShips.length; s++) {
+                        var ship = ocrts.computerShips[s]
+                        if (nodes.indexOf(ship.node) != -1) {
+                            shipsToMove.push(ship)
+                        }
+                    }
+                    for (s = 0; s < ((Math.random < 0.5) ? shipsToMove.length / 2 : shipsToMove.length); s++) {
+                        var ship = shipsToMove[s]
+                        ship.setNode(targetNode)
+                    }
+
+
+                }
+                ocrts.computer.lastdecision = performance.now()
+                }
+
+
+                
+            }
+
+            
+        },
     running: true,
     winner: null,
     team: {// now that there are team statics, clean game-wide checks into their respective objects
@@ -276,6 +314,7 @@ var ocrts = {
         this.computerShips.push(ship)
     },
     update: function () { // Too Messy
+        ocrts.computer.update()
         for (s in this.playerShips) {
             var ship = this.playerShips[s]
             ship.shoot(this.computerShips)
@@ -308,9 +347,10 @@ var ocrts = {
         }
         for (s in this.computerShips) {
             var ship = this.computerShips[s]
-            if (ship.isDead()) {
-                this.computerShips.splice(this.computerShips.indexOf(ship), 1)
-                shipsManager.ships.splice(shipsManager.ships.indexOf(ship), 1)
+            if (ship.node != spawner.config.player.home && ship.node != spawner.config.computer.home) {
+                if (ship.pos.clone().subtract(ship.node.pos).length() < 80) {// quick hack - clean up - make static vector functions for this
+                    ship.node.addCapture(-1)
+                }
             }
         }
     }
@@ -460,9 +500,6 @@ function update(delta) {
     }
     shipsManager.draw()
     nodeManager.draw()
-    for (var x = 0; x < 100000; x++) {
-        performance.now()
-    }
 
 }
 
