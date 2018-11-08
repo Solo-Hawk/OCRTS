@@ -22,7 +22,7 @@ var steeringAI = {
             maxSpeed: 1,
             angularRotation: 0.1,
             radius: 1,
-            reach: 32
+            reach: 50
         }
 
     },
@@ -76,7 +76,7 @@ var steeringAI = {
                 var pos = this.getPos();
                 var distanceVector = this.target.clone().subtract(pos)
                 var distance = distanceVector.length();
-                if (distance < 30) {
+                if (distance < 50) {
                     this.flee();
                     this.lastDecision = game.config.lasttimestamp
                 } else if (distance < steeringAI.speeds.wander.reach) {
@@ -125,12 +125,10 @@ var steeringAI = {
 
                 var pos = this.getPos();
                 var vel = this.getVector()
-                if (performance.now() - this.lastDecision > 100) {
-                    for (i = 0; i < 3; i++) {
-                        var force = util.vector2d(1 - Math.random() * 2, 1 - Math.random() * 2)
-                        force.normalise().scale(0.1)
-                        vel.add(force)
-                    }
+                if (performance.now() - this.lastDecision > 20) {
+                    var force = util.vector2d(1 - Math.random() * 2, 1 - Math.random() * 2)
+                    force.normalise().scale(0.01)
+                    vel.add(force)
                     this.lastDecision = game.config.lasttimestamp
                 }
 

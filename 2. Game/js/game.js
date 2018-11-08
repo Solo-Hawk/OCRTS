@@ -182,16 +182,16 @@ var input = {
         this.onClickEvents.push(func)
     },
     onClickEvents: [],
-    clickEvent: function (mouse) {
+    clickEvent: function (mouse,evt) {
         for (var f in this.onClickEvents) {
             var func = this.onClickEvents[f]
-            func(mouse)
+            func(mouse,evt)
         }
     }
 }
 
 canvas.addEventListener('click', function (evt) {
-    input.clickEvent(getMousePos(canvas,evt))
+    input.clickEvent(getMousePos(canvas,evt),evt)
 })
 
 function getMousePos(cvs, evt) {
