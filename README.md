@@ -1,5 +1,8 @@
 # Year 1 Prototype Project
 
+# NOTICE
+This project will be idle for some time as I move in on my course, the development of this game will be used later either as a continued development of this repo or a forked repo that will take over to archive this as my Uni work
+
 # One click RTS
 One Click RTS will a simple strategy game that will be built on desktop, then mobile, its focus is simply just simple one action controls to play game.
 
